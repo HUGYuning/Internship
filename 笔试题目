@@ -1,0 +1,65 @@
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+import sys
+import time
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
+
+def fetch_exchange_rate(date, currency_code):
+    # 设置WebDriver选项
+    options = webdriver.ChromeOptions()
+    options.add_argument('--headless')
+    # 初始化WebDriver服务
+    service = Service(ChromeDriverManager().install())
+    
+    # 使用设置好的选项和服务初始化WebDriver
+    driver = webdriver.Chrome(service=service, options=options)
+    
+    # 访问中国银行外汇牌价网站
+    driver.get('https://www.boc.cn/sourcedb/whpj/')
+    
+    try:
+        # 输入日期
+        date_input = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.ID, "pjdate"))
+        )
+        date_input.clear()
+        date_input.send_keys(date)
+        
+        # 选择货币
+        currency_select = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.NAME, "pjname"))
+        )
+        currency_select.click()
+        for option in currency_select.find_elements_by_tag_name('option'):
+            if option.text == currency_code:
+                option.click()
+                break
+        
+        # 点击查询
+        search_button = driver.find_element_by_class_name('search')
+        search_button.click()
+        
+        # 等待页面加载结果
+        time.sleep(5)  
+        
+        # 提取现汇卖出价并写入文件
+        sell_price = driver.find_element_by_xpath('//table[@class="BOC_main publish"]/tbody/tr[2]/td[7]').text
+        with open(r"D:\polyu文件\Year 4 Sem 2\Report\data.txt", 'w') as file:
+            file.write(sell_price)
+        
+        print(f"成功写入现汇卖出价: {sell_price}")
+    except Exception as e:
+        print(f"发生错误: {e}")
+    finally:
+        driver.quit()
+
+if __name__ == "__main__":
+    if len(sys.argv) != 3:
+        print("使用方法: python3 yourcode.py 日期 货币代号")
+    else:
+        date = sys.argv[1]
+        currency_code = sys.argv[2]
+        fetch_exchange_rate(date, currency_code)
