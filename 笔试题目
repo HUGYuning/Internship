@@ -1,3 +1,5 @@
+#For Q1
+
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -63,3 +65,33 @@ if __name__ == "__main__":
         date = sys.argv[1]
         currency_code = sys.argv[2]
         fetch_exchange_rate(date, currency_code)
+
+
+
+
+
+#For Q2
+def replace_chars(s, k):
+    # 最近k个字符中每个字符的最后出现位置
+    last_seen = {}
+    output = []
+
+    for i, char in enumerate(s):
+        # 如果字符在它前面的k个字符中出现过，则替换为'-'
+        if char in last_seen and i - last_seen[char] <= k:
+            output.append('-')
+        else:
+            output.append(char)
+        # 更新字符的最后出现位置
+        last_seen[char] = i
+
+    return ''.join(output)
+
+# 测试代码
+input_str1 = "abcdefaxc"
+k1 = 10
+print(replace_chars(input_str1, k1))  # 输出: abcdef-x-
+
+input_str2 = "abcdefaxcqwertba"
+k2 = 10
+print(replace_chars(input_str2, k2))  # 输出: abcdef-x-qw-rtb-
